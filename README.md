@@ -34,7 +34,7 @@ semantic-search-bot/
 │   ├── build_faiss_index.py
 │   ├── create_emebeddings.py
 │   ├── parse_dataset.py
-│   ├── requirements.py
+│   ├── requirements.txt
 │   ├── search.py
 │   └── test_read.py
 ├── data/
