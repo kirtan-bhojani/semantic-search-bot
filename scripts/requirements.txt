@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+sentence-transformers
+faiss-cpu
+numpy
+pydantic
+tqdm
+
