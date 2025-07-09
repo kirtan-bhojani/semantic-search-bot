@@ -8,7 +8,6 @@ A full-stack semantic search application that allows users to upload documents a
 
 - 🔍 **Semantic Search:** Retrieves answers based on meaning, not just keyword matches.
 - 🧠 **Transformer Embeddings:** Uses pre-trained language models to encode documents and queries.
-- 📁 **Multi-Document Support:** Upload `.txt`, `.pdf`, or `.docx` files to build your own knowledge base.
 - 🗂 **FAISS Vector Store:** Efficient similarity search over large document sets.
 - 🧵 **LangChain Pipelines:** Handles chunking, embedding, and query workflows.
 - 💻 **React Frontend:** Clean, interactive UI for uploading files and querying in real-time.
@@ -30,15 +29,22 @@ A full-stack semantic search application that allows users to upload documents a
 
 ```
 semantic-search-bot/
-├── backend/
-│   ├── app.py
-│   ├── utils/
-│   └── vector_store/
+├── scripts/
+│   ├── api_server.py
+│   ├── build_faiss_index.py
+│   ├── create_emebeddings.py
+│   ├── parse_dataset.py
+│   ├── requirements.py
+│   ├── search.py
+│   └── test_read.py
 ├── data/
+│   └── meta_Appliances.json.gz
 ├── semantic-search-frontend/
 │   ├── public/
 │   └── src/
-└── README.md
+└── vector_store
+│   ├── products_cleaned.json
+│   └── package.json
 ```
 
 ---
@@ -94,5 +100,6 @@ http://localhost:3000
 - [ ] Enable answer summarization
 - [ ] Add model switching from UI
 - [ ] Deploy to Hugging Face Spaces or Vercel
+- [ ] Integrate LLMs to make it real-time updated
 
 ---
