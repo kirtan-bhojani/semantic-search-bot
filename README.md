@@ -1,250 +1,428 @@
 # Semantic Search Bot
 
-A semantic document search system built with Python, FastAPI, vector embeddings, and large language models. Upload documents, search by meaning (not keywords), and ask questions answered by a locally running LLM using retrieval-augmented generation (RAG).
+A production-style semantic document search and Retrieval-Augmented Generation (RAG) backend built with **FastAPI**, **Sentence Transformers**, **FAISS**, and **Ollama**.
+
+Unlike traditional keyword search, this system retrieves documents based on **semantic meaning** using dense vector embeddings. Users can upload PDFs or text documents, perform semantic search, and ask natural language questions that are answered using retrieved document context.
+
+---
+
+## Overview
+
+Traditional search engines rely on keyword matching. If the wording of a query differs from the wording inside a document, relevant information may never be found.
+
+This project solves that problem by combining:
+
+- **Sentence Transformers** for dense text embeddings
+- **FAISS** for efficient vector similarity search
+- **Ollama** for local Large Language Model inference
+- **Retrieval-Augmented Generation (RAG)** to ground answers in uploaded documents
+
+The result is an end-to-end document intelligence pipeline capable of searching by meaning instead of exact words.
+
+---
 
 ## Features
 
-- **Document Ingestion** — Upload text (.txt, .md) and PDF files via REST API
-- **Intelligent Chunking** — Splits documents at natural boundaries (paragraphs, sentences) with configurable overlap
-- **Vector Embeddings** — Generates dense embeddings using `sentence-transformers/all-MiniLM-L6-v2`
-- **Semantic Search** — Retrieves relevant content by meaning using cosine similarity, not keyword matching
-- **RAG Question Answering** — Answers questions using retrieved context + a local Ollama LLM
-- **Document Management** — List and delete indexed documents
-- **Persistent Storage** — FAISS index and metadata persist to disk across restarts
+- Upload **TXT**, **Markdown**, and **PDF** documents
+- Automatic document parsing and intelligent text chunking
+- Dense vector embedding generation using Sentence Transformers
+- Semantic similarity search powered by FAISS
+- Retrieval-Augmented Question Answering (RAG)
+- Local LLM inference using Ollama (no cloud APIs required)
+- Persistent vector index and document metadata
+- REST API with interactive Swagger documentation
 
-## Tech Stack
+---
 
-| Component | Technology | Purpose |
-|---|---|---|
-| API Framework | FastAPI | REST API with automatic OpenAPI docs |
-| Embeddings | sentence-transformers | Dense vector representations of text |
-| Vector Store | FAISS | Fast similarity search over embeddings |
-| LLM | Ollama (local) | Question answering via RAG — no API keys needed |
-| PDF Parsing | PyMuPDF | Text extraction from PDF documents |
-| HTTP Client | httpx | Async communication with Ollama |
-| Configuration | pydantic-settings | Type-safe settings from environment variables |
+## Demo
 
-## Architecture
+### Swagger UI
 
-```
-                    ┌─────────────────────────────────────────────┐
-                    │               FastAPI Server                │
-                    │                                             │
-   Upload ─────────┤  /documents/upload                          │
-                    │      │                                      │
-                    │      ▼                                      │
-                    │  ┌──────────┐  ┌────────────┐  ┌─────────┐ │
-                    │  │ Chunking │─▶│ Embeddings │─▶│  FAISS  │ │
-                    │  └──────────┘  └────────────┘  │  Index  │ │
-                    │                                └────┬────┘ │
-   Search ──────────┤  /search                            │      │
-                    │      │         ┌────────────┐       │      │
-                    │      └────────▶│ Embeddings │───────┘      │
-                    │                └────────────┘   similarity  │
-                    │                                  search     │
-   Ask ─────────────┤  /ask                                      │
-                    │      │         ┌────────────┐              │
-                    │      ├────────▶│ Retrieval  │──────────┐   │
-                    │      │         └────────────┘          │   │
-                    │      │                                 ▼   │
-                    │      │         ┌────────────┐    ┌───────┐ │
-                    │      └────────▶│  Ollama    │◀───│Context│ │
-                    │                │  (RAG QA)  │    └───────┘ │
-                    │                └────────────┘              │
-                    └─────────────────────────────────────────────┘
+> *(Add screenshot here)*
+
+```text
+images/swagger.png
 ```
 
-## End-to-End Pipeline
+---
 
-```
-Upload → Extract Text → Chunk → Embed → Store in FAISS
-                                              │
-Query  → Embed Query  → Search FAISS ─────────┘
-                              │
-                              ▼
-                    Retrieve Top-K Chunks
-                              │
-                              ▼
-                    Construct Prompt with Context
-                              │
-                              ▼
-                    Generate Answer via Ollama LLM
+### Semantic Search
+
+> *(Add screenshot here)*
+
+```text
+images/search.png
 ```
 
-## Project Structure
+---
 
+### Retrieval-Augmented Generation
+
+> *(Add screenshot here)*
+
+```text
+images/rag.png
 ```
+
+---
+
+# Architecture
+
+```text
+                     Upload Document
+                            │
+                            ▼
+                 Extract Text (TXT/PDF)
+                            │
+                            ▼
+                  Intelligent Chunking
+                            │
+                            ▼
+          Sentence Transformer Embeddings
+                            │
+                            ▼
+                     FAISS Vector Index
+                            │
+            ┌───────────────┴───────────────┐
+            │                               │
+            ▼                               ▼
+     Semantic Search                  User Question
+                                            │
+                                            ▼
+                                  Query Embedding
+                                            │
+                                            ▼
+                                 FAISS Similarity Search
+                                            │
+                                            ▼
+                                Retrieve Top-K Chunks
+                                            │
+                                            ▼
+                           Prompt Construction (Context)
+                                            │
+                                            ▼
+                               Ollama (Llama 3.2)
+                                            │
+                                            ▼
+                                  Grounded Answer
+```
+
+---
+
+# End-to-End Pipeline
+
+```text
+Upload PDF/TXT
+        │
+        ▼
+Extract Text
+        │
+        ▼
+Chunk Document
+        │
+        ▼
+Generate Embeddings
+        │
+        ▼
+Store in FAISS
+        │
+──────── Query ────────► Embed Query
+                            │
+                            ▼
+                  Semantic Similarity Search
+                            │
+                            ▼
+                 Retrieve Relevant Chunks
+                            │
+                            ▼
+               Construct Contextual Prompt
+                            │
+                            ▼
+                 Ollama (Retrieval-Augmented Generation)
+                            │
+                            ▼
+                      Generated Answer
+```
+
+---
+
+# Tech Stack
+
+| Component | Technology |
+|------------|------------|
+| Backend | FastAPI |
+| Language | Python |
+| Embedding Model | sentence-transformers/all-MiniLM-L6-v2 |
+| Vector Database | FAISS |
+| LLM | Ollama |
+| PDF Parsing | PyMuPDF |
+| HTTP Client | httpx |
+| Configuration | pydantic-settings |
+
+---
+
+# Project Structure
+
+```text
 semantic-search-bot/
+│
 ├── app/
-│   ├── main.py              # FastAPI app, lifespan, middleware, router registration
-│   ├── config.py            # Pydantic settings (env vars, defaults)
-│   ├── models.py            # Request/response Pydantic schemas
-│   ├── dependencies.py      # FastAPI dependency injection
+│   ├── main.py
+│   ├── config.py
+│   ├── models.py
+│   ├── dependencies.py
+│   │
 │   ├── routers/
-│   │   ├── documents.py     # POST /documents/upload, GET /documents, DELETE /documents/{id}
-│   │   └── search.py        # POST /search, POST /ask
+│   │     ├── documents.py
+│   │     └── search.py
+│   │
 │   └── services/
-│       ├── chunking.py      # Text splitting with boundary detection
-│       ├── embeddings.py    # SentenceTransformer wrapper
-│       ├── vector_store.py  # FAISS index + metadata persistence
-│       ├── retrieval.py     # Query embedding → vector search orchestration
-│       └── qa.py            # RAG: context + Ollama LLM → answer
+│         ├── chunking.py
+│         ├── embeddings.py
+│         ├── vector_store.py
+│         ├── retrieval.py
+│         └── qa.py
+│
+├── sample_docs/
 ├── tests/
-│   ├── test_chunking.py     # Unit tests for chunking logic
-│   └── test_api.py          # Integration tests for API endpoints
-├── sample_docs/             # Sample .txt files for demo
 ├── requirements.txt
 ├── pyproject.toml
 ├── .env.example
-└── .gitignore
+└── README.md
 ```
 
-## API Endpoints
+---
+
+# API
 
 | Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/documents/upload` | Upload a document (txt, md, pdf) |
-| `GET` | `/documents` | List all indexed documents |
-| `DELETE` | `/documents/{document_id}` | Remove a document from the index |
-| `POST` | `/search` | Semantic search over indexed documents |
-| `POST` | `/ask` | Ask a question (RAG with Ollama) |
-| `GET` | `/health` | Health check |
+|---------|----------|-------------|
+| POST | `/documents/upload` | Upload a document |
+| GET | `/documents` | List indexed documents |
+| DELETE | `/documents/{id}` | Delete a document |
+| POST | `/search` | Semantic document search |
+| POST | `/ask` | Retrieval-Augmented Question Answering |
+| GET | `/health` | Health check |
 
-Full interactive API docs available at `http://localhost:8000/docs` (Swagger UI).
+Swagger UI:
 
-## Installation
+```
+http://localhost:8000/docs
+```
 
-### Prerequisites
+---
 
-- Python 3.10+
-- [Ollama](https://ollama.com) (for question answering only — search works without it)
+# Installation
 
-### Setup
+## Clone Repository
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/semantic-search-bot.git
+git clone https://github.com/kirtan-bhojani/semantic-search-bot.git
+
 cd semantic-search-bot
+```
 
-# Create virtual environment
+---
+
+## Create Virtual Environment
+
+Windows
+
+```bash
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
 
-# Install dependencies
+.venv\Scripts\activate
+```
+
+Linux / macOS
+
+```bash
+python3 -m venv .venv
+
+source .venv/bin/activate
+```
+
+---
+
+## Install Dependencies
+
+```bash
 pip install -r requirements.txt
+```
 
-# (Optional) Copy and customize configuration
+---
+
+## Configure Environment
+
+```bash
 cp .env.example .env
 ```
 
-### Install Ollama (for RAG)
+---
+
+## Install Ollama
+
+Download from
+
+https://ollama.com
+
+Pull a model
 
 ```bash
-# Install Ollama from https://ollama.com, then pull a model:
 ollama pull llama3.2
 ```
 
-## Running Locally
+Start Ollama
 
 ```bash
-# Start the server
+ollama serve
+```
+
+---
+
+# Run the Application
+
+```bash
 uvicorn app.main:app --reload
-
-# Server runs at http://localhost:8000
-# API docs at http://localhost:8000/docs
 ```
 
-## Example Usage
+Server
 
-### 1. Upload a Document
-
-```bash
-curl -X POST http://localhost:8000/documents/upload \
-  -F "file=@sample_docs/machine_learning.txt"
+```
+http://localhost:8000
 ```
 
-Response:
-```json
-{
-  "document_id": "a1b2c3d4-...",
-  "name": "machine_learning.txt",
-  "chunk_count": 7
-}
+Swagger
+
+```
+http://localhost:8000/docs
 ```
 
-### 2. Semantic Search
+---
 
-```bash
-curl -X POST http://localhost:8000/search \
-  -H "Content-Type: application/json" \
-  -d '{"query": "how do neural networks learn from data?", "k": 3}'
+# Example Workflow
+
+## 1. Upload a PDF
+
+```
+POST /documents/upload
 ```
 
-Response:
-```json
-{
-  "query": "how do neural networks learn from data?",
-  "results": [
-    {
-      "text": "Neural networks are computing systems inspired by biological...",
-      "document_name": "machine_learning.txt",
-      "chunk_index": 3,
-      "score": 0.72
-    }
-  ]
-}
+↓
+
+Document is
+
+- Parsed
+- Chunked
+- Embedded
+- Indexed inside FAISS
+
+---
+
+## 2. Semantic Search
+
+```
+POST /search
 ```
 
-### 3. Ask a Question (RAG)
+Example query
 
-```bash
-curl -X POST http://localhost:8000/ask \
-  -H "Content-Type: application/json" \
-  -d '{"question": "What is the difference between supervised and unsupervised learning?"}'
+```
+How do neural networks learn?
 ```
 
-Response:
-```json
-{
-  "question": "What is the difference between supervised and unsupervised learning?",
-  "answer": "Supervised learning uses labeled data where the correct answer is known...",
-  "sources": ["machine_learning.txt"],
-  "context": [...]
-}
+Returns
+
+- Relevant chunks
+- Similarity scores
+- Source document
+
+---
+
+## 3. Ask Questions
+
+```
+POST /ask
 ```
 
-### 4. List Documents
+Example
 
-```bash
-curl http://localhost:8000/documents
+```
+Explain supervised learning in simple words.
 ```
 
-### 5. Delete a Document
+Pipeline
 
-```bash
-curl -X DELETE http://localhost:8000/documents/{document_id}
+```
+Question
+        ↓
+Embedding
+        ↓
+FAISS Retrieval
+        ↓
+Top Context
+        ↓
+Ollama
+        ↓
+Grounded Answer
 ```
 
-## Running Tests
+---
 
-```bash
-python -m pytest tests/ -v
-```
+# Configuration
 
-## Configuration
+| Variable | Default |
+|------------|----------|
+| SSB_EMBEDDING_MODEL | sentence-transformers/all-MiniLM-L6-v2 |
+| SSB_OLLAMA_MODEL | llama3.2 |
+| SSB_OLLAMA_BASE_URL | http://localhost:11434 |
+| SSB_CHUNK_SIZE | 512 |
+| SSB_CHUNK_OVERLAP | 64 |
+| SSB_VECTOR_STORE_DIR | vector_store_data |
+| SSB_MAX_FILE_SIZE_MB | 50 |
 
-All settings can be configured via environment variables (prefix `SSB_`) or a `.env` file:
+---
 
-| Variable | Default | Description |
-|---|---|---|
-| `SSB_EMBEDDING_MODEL` | `sentence-transformers/all-MiniLM-L6-v2` | Hugging Face embedding model |
-| `SSB_OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama API URL |
-| `SSB_OLLAMA_MODEL` | `llama3.2` | Ollama model for RAG |
-| `SSB_CHUNK_SIZE` | `512` | Max characters per chunk |
-| `SSB_CHUNK_OVERLAP` | `64` | Overlap between chunks |
-| `SSB_VECTOR_STORE_DIR` | `vector_store_data` | Directory for FAISS index persistence |
-| `SSB_MAX_FILE_SIZE_MB` | `50` | Maximum upload file size |
+# Performance
 
-## License
+- Supports TXT, Markdown and PDF documents
+- Successfully tested on large PDF documents (400+ pages)
+- Persistent FAISS vector index
+- Embedding model initialized once and reused
+- Semantic search remains fast after indexing thousands of chunks
+
+---
+
+# Key Learnings
+
+Building this project provided practical experience with:
+
+- Semantic Search
+- Dense Vector Embeddings
+- FAISS Similarity Search
+- Retrieval-Augmented Generation (RAG)
+- FastAPI service-oriented architecture
+- Local LLM inference using Ollama
+- PDF ingestion and document chunking
+- REST API design
+- Dependency Injection
+- Persistent vector storage
+
+---
+
+# Future Improvements
+
+- Background indexing for large documents
+- Streaming LLM responses
+- Hybrid search (BM25 + Vector Search)
+- Metadata filtering
+- Authentication & multi-user support
+- Docker deployment
+- Kubernetes-ready deployment
+- Batch embedding generation on GPU
+
+---
+
+# License
 
 MIT
