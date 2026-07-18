@@ -51,7 +51,6 @@ The result is an end-to-end document intelligence pipeline capable of searching 
 
 ### Retrieval-Augmented Generation
 
-> *(Add screenshot here)*
 
 ![RAG Demo](images/rag.png)
 
