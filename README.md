@@ -38,21 +38,14 @@ The result is an end-to-end document intelligence pipeline capable of searching 
 
 ### Swagger UI
 
-> *(Add screenshot here)*
+![Swagger UI](images/swagger.png)
 
-```text
-images/swagger.png
-```
 
 ---
 
 ### Semantic Search
 
-> *(Add screenshot here)*
-
-```text
-images/search.png
-```
+![Semantic Search](images/search.png)
 
 ---
 
@@ -60,9 +53,7 @@ images/search.png
 
 > *(Add screenshot here)*
 
-```text
-images/rag.png
-```
+![RAG Demo](images/rag.png)
 
 ---
 
